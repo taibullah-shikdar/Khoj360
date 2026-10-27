@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+
+{% block title %}Application Status{% endblock %}
+
+{% block content %}
+<div class="card stack">
+    <h1>Application status</h1>
+    {% for application in applications %}
+        <p>{{ application.get_role_display }} - <span class="badge">{{ application.get_status_display }}</span></p>
+    {% empty %}
+        <p class="muted">No applications submitted.</p>
+    {% endfor %}
+    <a class="button" href="{% url 'accounts:apply_role' %}">New application</a>
+</div>
+{% endblock %}
