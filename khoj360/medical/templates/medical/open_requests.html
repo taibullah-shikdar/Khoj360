@@ -1,0 +1,135 @@
+{% extends "core/base.html" %}
+
+{% block title %}Open Medical Requests{% endblock %}
+
+{% block content %}
+<style>
+    .requests-page { display: grid; gap: 24px; }
+    .requests-top { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+    .requests-title h1 { margin: 0 0 8px; color: #17212b; font-size: clamp(2.4rem, 5vw, 3.4rem); line-height: 1; }
+    .requests-title p { margin: 0; color: #607080; font-size: 1.08rem; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab-pill { min-height: 44px; padding: 0 20px; border: 1px solid #d5dee4; border-radius: 999px; background: #fff; color: #17212b; box-shadow: none; }
+    .tab-pill.active { border-color: #0f766e; background: #0f766e; color: #fff; }
+    .requests-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.95fr); gap: 24px; align-items: start; }
+    .request-list { display: grid; gap: 12px; }
+    .request-item { display: grid; grid-template-columns: auto 1fr auto auto; gap: 18px; align-items: center; padding: 20px; border: 1px solid #dce4e8; border-radius: 14px; background: #fff; color: #17212b; }
+    .request-item.is-selected { border-color: #0f766e; box-shadow: 0 14px 38px rgba(15, 118, 110, 0.10); }
+    .type-pill { min-width: 74px; padding: 8px 12px; border-radius: 999px; text-align: center; font-weight: 900; font-size: 0.86rem; }
+    .type-blood { background: #fde1e1; color: #b4232a; }
+    .type-medical, .type-emergency { background: #d9f1ef; color: #087c75; }
+    .type-organ { background: #e7eafb; color: #303f9f; }
+    .request-item h3 { margin: 0 0 4px; color: #17212b; }
+    .request-item p, .time-label, .panel-muted { margin: 0; color: #607080; }
+    .time-label { font-weight: 800; font-size: 0.9rem; }
+    .accept-small, .accept-main { border-color: #0f766e; background: #0f766e; color: #fff; box-shadow: none; }
+    .accept-small { min-height: 44px; min-width: 98px; border-radius: 10px; }
+    .request-panel { padding: 28px; border: 1px solid #0f766e; border-radius: 18px; background: #fff; color: #17212b; }
+    .request-panel h2 { margin: 14px 0 18px; font-size: clamp(1.8rem, 4vw, 2.25rem); line-height: 1.05; }
+    .detail-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 0; border-top: 1px solid #e6edf1; color: #607080; }
+    .detail-row strong { color: #17212b; text-align: right; }
+    .status-steps { display: grid; grid-template-columns: auto 1fr auto 1fr auto; align-items: center; gap: 8px; margin: 12px 0 20px; color: #607080; font-weight: 800; }
+    .step-dot { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 999px; border: 2px solid #b8c4cc; font-size: 0.85rem; }
+    .step-dot.active { border-color: #0f766e; background: #0f766e; color: #fff; }
+    .step-line { height: 2px; background: #d5dee4; }
+    .accept-main { width: 100%; min-height: 52px; border-radius: 10px; font-size: 1.05rem; }
+    .report-link { display: block; margin-top: 18px; color: #a11b1b; text-align: center; text-decoration: underline; }
+    @media (max-width: 900px) {
+        .requests-layout { grid-template-columns: 1fr; }
+        .request-item { grid-template-columns: 1fr; }
+        .requests-top { display: grid; }
+    }
+</style>
+
+<section class="requests-page">
+    <div class="requests-top">
+        <div class="requests-title">
+            <h1>Open requests</h1>
+            <p>Medical requests near you that need an approved helper.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="button" href="{% url 'medical:my_requests' %}">My requests</a>
+            <a class="button" href="{% url 'medical:create_request' %}">Create medical request</a>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <a class="tab-pill {% if active_type == 'all' %}active{% endif %}" href="{% url 'medical:open_requests' %}">All</a>
+        <a class="tab-pill {% if active_type == 'emergency' %}active{% endif %}" href="{% url 'medical:open_requests' %}?type=emergency">
+            🚨 Emergency
+            {% if emergency_count %}
+                <span style="display:inline-flex; align-items:center; justify-content:center; background:#ef4444; color:#fff; border-radius:999px; min-width:18px; height:18px; font-size:0.7rem; font-weight:900; padding:0 5px; margin-left:4px;">{{ emergency_count }}</span>
+            {% endif %}
+        </a>
+        <a class="tab-pill {% if active_type == 'blood' %}active{% endif %}" href="{% url 'medical:open_requests' %}?type=blood">Blood</a>
+        <a class="tab-pill {% if active_type == 'organ' %}active{% endif %}" href="{% url 'medical:open_requests' %}?type=organ">Organ</a>
+    </div>
+
+    <div class="requests-layout">
+        <div class="request-list">
+            {% for request_item in requests %}
+                <article class="request-item {% if selected_request and selected_request.pk == request_item.pk %}is-selected{% endif %}">
+                    <span class="type-pill type-{{ request_item.request_type }}">{{ request_item.get_request_type_display }}</span>
+                    <div>
+                        <a href="{% url 'medical:open_requests' %}?type={{ active_type }}&selected={{ request_item.pk }}">
+                            <h3>
+                                {% if request_item.request_type == "blood" and request_item.blood_group %}
+                                    {{ request_item.blood_group }} blood needed{% if request_item.blood_bags %}, {{ request_item.blood_bags }} bags{% endif %}
+                                {% else %}
+                                    {{ request_item.description|default:"Need help reaching a hospital"|truncatechars:58 }}
+                                {% endif %}
+                            </h3>
+                        </a>
+                        <p>{{ request_item.hospital|default:request_item.location }} · {{ request_item.created_at|timesince }} ago</p>
+                    </div>
+                    <span class="time-label">{% if request_item.needed_at %}{{ request_item.needed_at|date:"M d, h:i A" }}{% else %}Needed today{% endif %}</span>
+                    {% if request_item.can_accept %}
+                        <form action="{% url 'medical:accept_request' request_item.pk %}" method="post">
+                            {% csrf_token %}
+                            <button class="accept-small" type="submit">Accept</button>
+                        </form>
+                    {% endif %}
+                </article>
+            {% empty %}
+                <article class="request-item"><p>No open medical requests.</p></article>
+            {% endfor %}
+        </div>
+
+        <aside class="request-panel">
+            {% if selected_request %}
+                <span class="type-pill type-{{ selected_request.request_type }}">{{ selected_request.get_request_type_display }}</span>
+                <h2>
+                    {% if selected_request.request_type == "blood" and selected_request.blood_group %}
+                        {{ selected_request.blood_group }} blood needed{% if selected_request.blood_bags %}, {{ selected_request.blood_bags }} bags{% endif %}
+                    {% else %}
+                        {{ selected_request.description|default:"Need urgent medical help" }}
+                    {% endif %}
+                </h2>
+                <div class="detail-row"><span>Hospital</span><strong>{{ selected_request.hospital|default:"Not added" }}</strong></div>
+                <div class="detail-row"><span>Needed by</span><strong>{% if selected_request.needed_at %}{{ selected_request.needed_at|date:"M d, h:i A" }}{% else %}Today{% endif %}</strong></div>
+                <div class="detail-row"><span>Location</span><strong>{{ selected_request.location }}</strong></div>
+                <div class="detail-row"><span>Requester phone</span><strong>{{ selected_request.phone|default:"Not added" }}</strong></div>
+                <p class="panel-muted" style="margin-top: 16px; font-weight: 800;">Status</p>
+                <div class="status-steps">
+                    <span class="step-dot active">1</span><span class="step-line"></span><span class="step-dot">2</span><span class="step-line"></span><span class="step-dot">3</span>
+                    <span>Open</span><span></span><span>Accepted</span><span></span><span>Done</span>
+                </div>
+                {% if selected_can_accept %}
+                    <form action="{% url 'medical:accept_request' selected_request.pk %}" method="post">
+                        {% csrf_token %}
+                        <button class="accept-main" type="submit">Accept this request</button>
+                    </form>
+                {% elif selected_is_own %}
+                    <p class="panel-muted" style="color:#b45309; font-weight:700;">⚠️ You posted this request (you cannot accept your own request).</p>
+                {% else %}
+                    <p class="panel-muted">Blood requests can be accepted by approved donors. Other medical requests can be accepted by approved volunteers.</p>
+                {% endif %}
+                <a class="report-link" href="{% url 'medical:report_request' selected_request.pk %}">Report as fake or misuse</a>
+            {% else %}
+                <h2>No request selected</h2>
+                <p class="panel-muted">New medical requests will appear here.</p>
+            {% endif %}
+        </aside>
+    </div>
+</section>
+{% endblock %}
