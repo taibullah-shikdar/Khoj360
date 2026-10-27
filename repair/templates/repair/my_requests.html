@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+
+{% block title %}My Repair Requests{% endblock %}
+
+{% block content %}
+<div class="stack">
+    <div class="card">
+        <h1>My repair requests</h1>
+        <a class="button" href="{% url 'repair:create_request' %}">Create request</a>
+    </div>
+    {% for request_item in requests %}
+        <article class="card stack">
+            <h2>{{ request_item.get_repair_type_display }} - {{ request_item.location }}</h2>
+            <p>Status: <span class="badge">{{ request_item.get_status_display }}</span></p>
+            {% if request_item.accepted_by %}<p>Accepted by: {{ request_item.accepted_by.username }}</p>{% endif %}
+            {% if request_item.status == "done" %}
+                <form action="{% url 'repair:confirm_done' request_item.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Confirm done</button>
+                </form>
+            {% endif %}
+        </article>
+    {% empty %}
+        <div class="card"><p class="muted">No repair requests yet.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}
