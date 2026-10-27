@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+
+{% block title %}Report Request{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Report request</h1>
+    <p class="muted">{{ medical_request }}</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit report</button>
+    </form>
+</div>
+{% endblock %}
