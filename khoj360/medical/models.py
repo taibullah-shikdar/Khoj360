@@ -76,3 +76,4 @@ class MedicalReport(models.Model):
 # Create your models here.
 
 
+
