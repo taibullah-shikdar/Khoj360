@@ -1,0 +1,91 @@
+{% extends "core/base.html" %}
+
+{% block title %}Open Repair Requests{% endblock %}
+
+{% block content %}
+<style>
+    .repair-page { display: grid; gap: 24px; }
+    .repair-top { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+    .repair-top h1 { margin: 0 0 8px; color: #17212b; font-size: clamp(2.4rem, 5vw, 3.4rem); line-height: 1; }
+    .repair-top p, .muted-repair { color: #607080; }
+    .repair-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.95fr); gap: 24px; align-items: start; }
+    .repair-list { display: grid; gap: 12px; }
+    .repair-item, .repair-panel { padding: 22px; border: 1px solid #dce4e8; border-radius: 16px; background: #fff; color: #17212b; }
+    .repair-item { display: grid; grid-template-columns: auto 1fr auto auto; gap: 18px; align-items: center; }
+    .repair-item.is-selected, .repair-panel { border-color: #b98916; }
+    .repair-item.is-selected { box-shadow: 0 14px 38px rgba(185, 137, 22, 0.12); }
+    .repair-pill { min-width: 94px; padding: 8px 12px; border-radius: 999px; background: #ffefbd; color: #76520d; text-align: center; font-weight: 900; font-size: 0.86rem; }
+    .repair-item h3 { margin: 0 0 4px; }
+    .repair-time { color: #607080; font-weight: 800; font-size: 0.9rem; }
+    .repair-accept { min-height: 44px; min-width: 98px; border-radius: 10px; border-color: #0f766e; background: #0f766e; color: #fff; box-shadow: none; }
+    .repair-panel h2 { margin: 14px 0 18px; font-size: clamp(1.8rem, 4vw, 2.25rem); }
+    .repair-row { display: flex; justify-content: space-between; gap: 16px; padding: 13px 0; border-top: 1px solid #e6edf1; color: #607080; }
+    .repair-row strong { color: #17212b; text-align: right; }
+    .repair-main { width: 100%; min-height: 52px; margin-top: 18px; border-radius: 10px; border-color: #0f766e; background: #0f766e; box-shadow: none; }
+    @media (max-width: 900px) {
+        .repair-layout { grid-template-columns: 1fr; }
+        .repair-item { grid-template-columns: 1fr; }
+        .repair-top { display: grid; }
+    }
+</style>
+
+<section class="repair-page">
+    <div class="repair-top">
+        <div>
+            <h1>Repair requests</h1>
+            <p class="muted-repair">Car and home repair requests waiting for approved providers.</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <a class="button" href="{% url 'repair:my_requests' %}">My requests</a>
+            <a class="button" href="{% url 'repair:create_request' %}">Create repair request</a>
+        </div>
+    </div>
+
+    <div class="repair-layout">
+        <div class="repair-list">
+            {% for request_item in requests %}
+                <article class="repair-item {% if selected_request and selected_request.pk == request_item.pk %}is-selected{% endif %}">
+                    <span class="repair-pill">{{ request_item.get_repair_type_display }} repair</span>
+                    <div>
+                        <a href="{% url 'repair:open_requests' %}?selected={{ request_item.pk }}"><h3>{{ request_item.description|truncatechars:58 }}</h3></a>
+                        <p class="muted-repair">{{ request_item.location }} · {{ request_item.created_at|timesince }} ago</p>
+                    </div>
+                    <span class="repair-time">{% if request_item.budget %}Budget {{ request_item.budget }}{% else %}Open{% endif %}</span>
+                    {% if request_item.can_accept %}
+                        <form action="{% url 'repair:accept_request' request_item.pk %}" method="post">
+                            {% csrf_token %}
+                            <button class="repair-accept" type="submit">Accept</button>
+                        </form>
+                    {% endif %}
+                </article>
+            {% empty %}
+                <article class="repair-item"><p>No open repair requests.</p></article>
+            {% endfor %}
+        </div>
+
+        <aside class="repair-panel">
+            {% if selected_request %}
+                <span class="repair-pill">{{ selected_request.get_repair_type_display }} repair</span>
+                <h2>{{ selected_request.description }}</h2>
+                <div class="repair-row"><span>Location</span><strong>{{ selected_request.location }}</strong></div>
+                <div class="repair-row"><span>Budget</span><strong>{% if selected_request.budget %}{{ selected_request.budget }}{% else %}Not set{% endif %}</strong></div>
+                <div class="repair-row"><span>Requester phone</span><strong>{% if can_accept %}{{ selected_request.phone|default:"Not added" }}{% else %}Hidden until you accept{% endif %}</strong></div>
+                <div class="repair-row"><span>Status</span><strong>{{ selected_request.get_status_display }}</strong></div>
+                {% if selected_can_accept %}
+                    <form action="{% url 'repair:accept_request' selected_request.pk %}" method="post">
+                        {% csrf_token %}
+                        <button class="repair-main" type="submit">Accept this repair job</button>
+                    </form>
+                {% elif selected_is_own %}
+                    <p class="muted-repair" style="margin-top:16px; font-weight:700; color:#b45309;">⚠️ You posted this request (you cannot accept your own request).</p>
+                {% else %}
+                    <p class="muted-repair">Only approved repair providers can accept repair requests.</p>
+                {% endif %}
+            {% else %}
+                <h2>No repair request selected</h2>
+                <p class="muted-repair">New repair requests will appear here.</p>
+            {% endif %}
+        </aside>
+    </div>
+</section>
+{% endblock %}
