@@ -1,0 +1,450 @@
+{% extends "core/base.html" %}
+
+{% block title %}Khoj360 — Pashe Achi{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── HERO ───────────────────────────────────────────── */
+    .hero {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 48px;
+        align-items: center;
+        padding: 48px 0 40px;
+    }
+    .hero-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: var(--radius-full);
+        background: var(--brand-light);
+        color: var(--brand-dark);
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        margin-bottom: 20px;
+    }
+    .hero-kicker::before { content: "🟢"; font-size: 0.7rem; }
+    .hero-title {
+        font-size: clamp(2.6rem, 6vw, 4.2rem);
+        font-weight: 900;
+        line-height: 1.0;
+        letter-spacing: -0.03em;
+        color: var(--text-main);
+        margin-bottom: 16px;
+    }
+    .hero-title span { color: var(--brand); }
+    .hero-copy { font-size: 1.12rem; line-height: 1.6; color: var(--text-sub); max-width: 520px; margin-bottom: 28px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+    .callout {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 18px;
+        border: 1.5px solid #fde68a;
+        border-radius: var(--radius-md);
+        background: var(--accent-light);
+        color: #78350f;
+        font-weight: 600;
+        font-size: 0.9rem;
+        max-width: 520px;
+    }
+
+    /* ── SOS CARD ───────────────────────────────────────── */
+    .sos-hero-card {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 40px 28px;
+        border: 2px solid rgba(220,38,38,.18);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(160deg, #fff 0%, #fff5f5 100%);
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+        color: inherit;
+        min-height: 380px;
+    }
+    .sos-hero-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 60px rgba(220,38,38,.18);
+        border-color: rgba(220,38,38,.35);
+        color: inherit;
+    }
+    .sos-ring {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 40% 30%, #fb7185, #dc2626 55%, #7f1d1d 100%);
+        display: grid;
+        place-items: center;
+        box-shadow: 0 0 0 20px rgba(239,68,68,.1), 0 0 0 40px rgba(239,68,68,.05);
+        margin: 0 auto 20px;
+        color: #fff;
+        font-size: 2.8rem;
+        font-weight: 1000;
+        animation: sos-breathe 3s ease-in-out infinite;
+    }
+    @keyframes sos-breathe {
+        0%, 100% { box-shadow: 0 0 0 20px rgba(239,68,68,.1), 0 0 0 40px rgba(239,68,68,.05); }
+        50% { box-shadow: 0 0 0 28px rgba(239,68,68,.15), 0 0 0 52px rgba(239,68,68,.07); }
+    }
+    .sos-hero-card h2 { font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+    .sos-hero-card p { color: var(--text-sub); font-size: 0.9rem; line-height: 1.5; }
+
+    /* ── FEATURE STRIP ──────────────────────────────────── */
+    .feature-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    .feature-card {
+        padding: 22px 20px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        box-shadow: var(--shadow-sm);
+        text-decoration: none;
+        color: inherit;
+        transition: all .18s;
+        display: block;
+    }
+    .feature-card:hover {
+        border-color: var(--brand-mid);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+        color: inherit;
+    }
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-sm);
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        margin-bottom: 14px;
+        background: var(--brand-light);
+    }
+    .feature-icon.red { background: var(--danger-light); }
+    .feature-icon.gold { background: var(--accent-light); }
+    .feature-icon.blue { background: #dbeafe; }
+    .feature-icon.purple { background: #ede9fe; }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+    .feature-card p { font-size: 0.87rem; color: var(--text-sub); line-height: 1.5; }
+
+    /* ── CONTENT COLUMNS ────────────────────────────────── */
+    .content-cols {
+        display: grid;
+        grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
+        gap: 24px;
+    }
+
+    /* ── SECTION HEADER ─────────────────────────────────── */
+    .sec-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 14px;
+        border-bottom: 1.5px solid var(--border);
+        margin-bottom: 4px;
+    }
+    .sec-head h2 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+
+    /* ── REQUEST ROWS ───────────────────────────────────── */
+    .req-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .req-row:last-child { border-bottom: none; }
+    .req-label { font-weight: 700; font-size: 0.92rem; color: var(--text-main); }
+    .req-meta { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+    .req-type {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 11px;
+        border-radius: var(--radius-full);
+        font-size: 0.78rem;
+        font-weight: 800;
+        white-space: nowrap;
+        background: var(--danger-light);
+        color: var(--danger);
+    }
+    .req-type.medical { background: var(--brand-light); color: var(--brand-dark); }
+    .req-type.repair { background: var(--accent-light); color: #92400e; }
+    .empty-state { text-align: center; padding: 32px 0; color: var(--text-muted); font-size: 0.92rem; }
+    .empty-state .empty-icon { font-size: 2.4rem; margin-bottom: 8px; }
+
+    /* ── NEWS ROWS ──────────────────────────────────────── */
+    .news-row {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .news-row:last-child { border-bottom: none; }
+    .news-title { font-weight: 700; font-size: 0.92rem; color: var(--text-main); margin-bottom: 4px; }
+    .news-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .news-area-pill {
+        display: inline-flex;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+        background: var(--brand-light);
+        color: var(--brand-dark);
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    /* ── STATS BAR ──────────────────────────────────────── */
+    .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        text-align: center;
+        padding: 28px;
+        border: 1.5px solid var(--border-dark);
+        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%);
+        color: #fff;
+    }
+    .stat-num { font-size: 2.4rem; font-weight: 900; line-height: 1; }
+    .stat-label { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+    .stat-item { border-right: 1px solid rgba(255,255,255,.2); }
+    .stat-item:last-child { border-right: none; }
+
+    /* ── HOTLINE BAND ───────────────────────────────────── */
+    .hotline-band {
+        display: grid;
+        grid-template-columns: auto repeat(3, 1fr);
+        gap: 16px;
+        align-items: center;
+        padding: 28px 32px;
+        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, #0b4842 0%, #0e6b62 100%);
+        color: #fff;
+        box-shadow: var(--shadow-lg);
+    }
+    .hotline-intro h2 { font-size: 1.4rem; font-weight: 900; margin-bottom: 4px; }
+    .hotline-intro p { font-size: 0.88rem; opacity: 0.75; }
+    .hotline-tile {
+        padding: 18px 20px;
+        border-radius: var(--radius-md);
+        background: rgba(255,255,255,.1);
+        border: 1px solid rgba(255,255,255,.15);
+        text-decoration: none;
+        color: #fff;
+        transition: all .15s;
+        display: block;
+    }
+    .hotline-tile:hover { background: rgba(255,255,255,.2); color: #fff; transform: translateY(-2px); }
+    .hotline-num { font-size: 2rem; font-weight: 900; line-height: 1; display: block; }
+    .hotline-name { font-size: 0.82rem; opacity: 0.8; margin-top: 4px; }
+
+    /* ── PAGE FOOTER ─────────────────────────────────────── */
+    .page-footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding-top: 8px; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+        .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 32px; }
+        .sos-hero-card { min-height: auto; order: -1; }
+        .feature-strip { grid-template-columns: 1fr 1fr; }
+        .content-cols { grid-template-columns: 1fr; }
+        .hotline-band { grid-template-columns: 1fr 1fr; }
+        .hotline-intro { grid-column: 1 / -1; }
+        .stats-bar { grid-template-columns: 1fr; gap: 12px; }
+        .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,.2); padding-bottom: 12px; }
+        .stat-item:last-child { border-bottom: none; padding-bottom: 0; }
+    }
+    @media (max-width: 560px) {
+        .feature-strip { grid-template-columns: 1fr; }
+        .hotline-band { grid-template-columns: 1fr; padding: 24px 20px; }
+        .req-row { grid-template-columns: 1fr; gap: 8px; }
+        .callout { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stack" style="gap:40px;">
+
+    <!-- ── HERO ──────────────────────────────────────────── -->
+    <section class="hero">
+        <div>
+            <div class="hero-kicker">আমি তোমার পাশে আছি &nbsp;·&nbsp; Pashe Achi</div>
+            <h1 class="hero-title">Help is one <span>tap</span> away.</h1>
+            <p class="hero-copy">Khoj360 connects you with verified volunteers, blood donors and repair providers in your area — instantly.</p>
+            <div class="hero-actions">
+                <a class="button lg" href="{% url 'medical:create_request' %}">🩸 Request blood</a>
+                <a class="button lg outline" href="{% url 'repair:create_request' %}">🔧 Ask for repair</a>
+            </div>
+            <div class="callout">
+                <span>⚠️ Serious emergency? Call 999 first, then send SOS here.</span>
+                <a class="button accent sm" href="tel:999">📞 Call 999</a>
+            </div>
+        </div>
+
+        <a class="sos-hero-card" href="{% if user.is_authenticated %}{% url 'emergency:sos_home' %}{% else %}{% url 'accounts:login' %}{% endif %}">
+            <div>
+                <div class="sos-ring">SOS</div>
+                <h2>Tap to send an emergency request</h2>
+                <p>Your location is shared with nearby volunteers. You get a 5-second window to cancel.</p>
+            </div>
+        </a>
+    </section>
+
+    <!-- ── STATS ──────────────────────────────────────────── -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-num">{{ open_medical_count }}</div>
+            <div class="stat-label">Open medical requests</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">{{ open_repair_count }}</div>
+            <div class="stat-label">Open repair requests</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">{{ news_items|length }}</div>
+            <div class="stat-label">Nearby news items</div>
+        </div>
+    </div>
+
+    <!-- ── FEATURE CARDS ──────────────────────────────────── -->
+    <section class="feature-strip">
+        <a class="feature-card" href="{% url 'medical:create_request' %}">
+            <div class="feature-icon">🏥</div>
+            <h3>Medical emergency</h3>
+            <p>Request an ambulance or urgent help from a volunteer near you.</p>
+        </a>
+        <a class="feature-card" href="{% url 'medical:create_request' %}">
+            <div class="feature-icon red">🩸</div>
+            <h3>Blood request</h3>
+            <p>Post the blood group you need — matching donors are alerted immediately.</p>
+        </a>
+        <a class="feature-card" href="{% url 'repair:create_request' %}">
+            <div class="feature-icon gold">🔧</div>
+            <h3>Repair help</h3>
+            <p>Car or home problem? A certified repair provider near you can accept the job.</p>
+        </a>
+    </section>
+
+    <!-- ── CONTENT COLUMNS ─────────────────────────────────── -->
+    <section class="content-cols">
+
+        <!-- Open requests -->
+        <div class="card" style="padding:28px;">
+            <div class="sec-head">
+                <h2>Open requests near you</h2>
+                <a class="button sm outline" href="{% url 'medical:open_requests' %}">See all →</a>
+            </div>
+
+            {% for item in open_medical_requests %}
+            <div class="req-row">
+                <span class="req-type {% if item.request_type == 'emergency' %}medical{% endif %}">
+                    {{ item.get_request_type_display }}
+                </span>
+                <div>
+                    <div class="req-label">
+                        {% if item.request_type == 'blood' and item.blood_group %}
+                            {{ item.blood_group }} blood needed{% if item.blood_bags %}, {{ item.blood_bags }} bags{% endif %}
+                        {% else %}
+                            {{ item.description|default:"Need urgent medical help"|truncatechars:52 }}
+                        {% endif %}
+                    </div>
+                    <div class="req-meta">📍 {{ item.location }}{% if item.hospital %} · {{ item.hospital }}{% endif %}</div>
+                </div>
+                <a class="button sm outline" href="{% url 'medical:open_requests' %}">View</a>
+            </div>
+            {% endfor %}
+
+            {% for item in open_repair_requests %}
+            <div class="req-row">
+                <span class="req-type repair">{{ item.get_repair_type_display }} repair</span>
+                <div>
+                    <div class="req-label">{{ item.description|truncatechars:52 }}</div>
+                    <div class="req-meta">📍 {{ item.location }}</div>
+                </div>
+                <a class="button sm outline" href="{% url 'repair:open_requests' %}">View</a>
+            </div>
+            {% endfor %}
+
+            {% if not open_medical_requests and not open_repair_requests %}
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                No open requests in your area right now.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Nearby news sidebar -->
+        <div class="card" style="padding:28px;">
+            <div class="sec-head">
+                <h2>
+                    📰 Nearby news
+                    {% if unseen_news_count %}
+                        <span class="badge" style="background:#fef3c7;color:#92400e;margin-left:6px;">{{ unseen_news_count }} new</span>
+                    {% endif %}
+                </h2>
+                <a class="button sm outline" href="{% url 'core:news_list' %}">See all →</a>
+            </div>
+
+            {% for news in news_items|slice:":4" %}
+            <div class="news-row">
+                <div class="news-title">{{ news.title }}</div>
+                <div class="news-meta">
+                    {% if news.area %}<span class="news-area-pill">{{ news.area }}</span>{% endif %}
+                    {{ news.created_at|timesince }} ago
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-icon">🗞️</div>
+                No nearby news yet.
+                {% if user.is_authenticated %}
+                <br><a href="{% url 'core:news_add' %}">Be the first to post!</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {% if user.is_authenticated %}
+            <div style="margin-top:16px;">
+                <a class="button accent" href="{% url 'core:news_add' %}" style="width:100%;">+ Post a news</a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- ── HOTLINE BAND ────────────────────────────────────── -->
+    <section class="hotline-band">
+        <div class="hotline-intro">
+            <h2>📞 Hotlines</h2>
+            <p>Tap to call instantly.</p>
+        </div>
+        <a class="hotline-tile" href="tel:999">
+            <span class="hotline-num">999</span>
+            <div class="hotline-name">National emergency</div>
+        </a>
+        {% for hl in hotlines|slice:":2" %}
+        <a class="hotline-tile" href="tel:{{ hl.phone }}">
+            <span class="hotline-num">{{ hl.phone }}</span>
+            <div class="hotline-name">{{ hl.title }}</div>
+        </a>
+        {% empty %}
+        <a class="hotline-tile" href="#">
+            <span class="hotline-num">1994</span>
+            <div class="hotline-name">Ambulance</div>
+        </a>
+        <a class="hotline-tile" href="#">
+            <span class="hotline-num">16000</span>
+            <div class="hotline-name">Blood bank</div>
+        </a>
+        {% endfor %}
+    </section>
+
+    <p class="page-footer">Khoj360 / Pashe Achi connects people. It does not replace 999 or a hospital.</p>
+</div>
+{% endblock %}

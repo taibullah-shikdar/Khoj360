@@ -1,0 +1,111 @@
+{% extends "core/base.html" %}
+
+{% block title %}Post News — Khoj360{% endblock %}
+
+{% block extra_head %}
+<style>
+    .add-news-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+    }
+    .add-news-header {
+        margin-bottom: 28px;
+    }
+    .add-news-header h1 {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--text-main);
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+    }
+    .add-news-header p {
+        color: var(--text-sub);
+        font-size: 0.95rem;
+    }
+    .news-form-card {
+        padding: 32px;
+        border: 1.5px solid var(--border-dark);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-md);
+    }
+    .form-group {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 20px;
+    }
+    .form-group:last-of-type { margin-bottom: 0; }
+    .form-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-sub);
+    }
+    .form-hint {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+    .char-counter {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        text-align: right;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="add-news-wrap">
+    <div class="add-news-header">
+        <h1>📰 Post Nearby News</h1>
+        <p>Share a local update, road condition, event, or alert with your community.</p>
+    </div>
+
+    <div class="news-form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label" for="id_title">Headline <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="id_title" name="title" maxlength="160" required
+                       placeholder="e.g. Road block near Mirpur 10 circle">
+                <div class="form-hint">Keep it short and informative (max 160 characters).</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_area">Area / Location</label>
+                <input type="text" id="id_area" name="area" maxlength="120"
+                       placeholder="e.g. Mirpur, Uttara, Dhanmondi">
+                <div class="form-hint">Optional — helps others filter by location.</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_body">Details <span style="color:var(--danger)">*</span></label>
+                <textarea id="id_body" name="body" required
+                          placeholder="Describe the situation in detail. What happened? When? What should people know?"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="button accent lg">🚀 Publish News</button>
+                <a class="button outline lg" href="{% url 'core:news_list' %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live char counter for title
+    const title = document.getElementById('id_title');
+    title.addEventListener('input', () => {
+        const left = 160 - title.value.length;
+        let hint = title.nextElementSibling;
+        if (hint) hint.textContent = `${left} characters remaining`;
+    });
+</script>
+{% endblock %}
