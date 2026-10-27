@@ -1,0 +1,264 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ title|default:"Medical Request" }} — Khoj360{% endblock %}
+
+{% block extra_head %}
+<style>
+    .req-form-wrap { max-width: 640px; margin: 0 auto; }
+    .req-form-header { margin-bottom: 28px; }
+    .req-form-header h1 { font-size: 1.8rem; font-weight: 900; color: var(--text-main); letter-spacing: -0.02em; margin-bottom: 6px; }
+    .req-form-header p { color: var(--text-sub); font-size: 0.95rem; }
+    .form-card {
+        padding: 32px;
+        border: 1.5px solid var(--border-dark);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow-md);
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-sub);
+        margin-bottom: 6px;
+    }
+    .form-group .required-star { color: var(--danger); margin-left: 2px; }
+    .field-error {
+        margin-top: 5px;
+        font-size: 0.82rem;
+        color: var(--danger);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-error::before { content: "⚠ "; }
+    input.error-input, select.error-input, textarea.error-input {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(220,38,38,.12);
+    }
+    .type-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+    .type-option input[type="radio"] { display: none; }
+    .type-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 16px 10px;
+        border: 1.5px solid var(--border-dark);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-sub);
+        transition: all .15s;
+        text-align: center;
+    }
+    .type-option label .type-icon { font-size: 1.6rem; }
+    .type-option input[type="radio"]:checked + label {
+        border-color: var(--brand);
+        background: var(--brand-light);
+        color: var(--brand-dark);
+    }
+    .type-option label:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+    .blood-fields, .organ-fields { display: none; }
+    .blood-fields.visible, .organ-fields.visible { display: grid; gap: 16px; }
+    .blood-fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+    .non-field-errors {
+        padding: 14px 18px;
+        border-radius: var(--radius-sm);
+        background: var(--danger-light);
+        border: 1.5px solid #fca5a5;
+        color: #7f1d1d;
+        font-weight: 600;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+    .form-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+    @media (max-width: 480px) {
+        .type-selector { grid-template-columns: 1fr; }
+        .blood-fields-row { grid-template-columns: 1fr; }
+        .form-card { padding: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="req-form-wrap">
+    <div class="req-form-header">
+        <h1>🏥 {{ title|default:"Create Medical Request" }}</h1>
+        <p>Fill in the details below. Only <strong>Request type</strong> and <strong>Location</strong> are required.</p>
+    </div>
+
+    <div class="form-card">
+        {% if form.non_field_errors %}
+        <div class="non-field-errors">
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" id="medicalForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Request Type -->
+            <div class="form-group">
+                <label>Request type <span class="required-star">*</span></label>
+                <div class="type-selector">
+                    <div class="type-option">
+                        <input type="radio" name="request_type" id="type_emergency" value="emergency"
+                               {% if form.request_type.value == "emergency" %}checked{% endif %}>
+                        <label for="type_emergency">
+                            <span class="type-icon">🚨</span>
+                            Emergency
+                        </label>
+                    </div>
+                    <div class="type-option">
+                        <input type="radio" name="request_type" id="type_blood" value="blood"
+                               {% if form.request_type.value == "blood" %}checked{% endif %}>
+                        <label for="type_blood">
+                            <span class="type-icon">🩸</span>
+                            Blood
+                        </label>
+                    </div>
+                    <div class="type-option">
+                        <input type="radio" name="request_type" id="type_organ" value="organ"
+                               {% if form.request_type.value == "organ" %}checked{% endif %}>
+                        <label for="type_organ">
+                            <span class="type-icon">💊</span>
+                            Organ
+                        </label>
+                    </div>
+                </div>
+                {% if form.request_type.errors %}
+                <div class="field-error">{{ form.request_type.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Location -->
+            <div class="form-group">
+                <label for="{{ form.location.id_for_label }}">
+                    Location <span class="required-star">*</span>
+                </label>
+                <input type="text" name="location" id="{{ form.location.id_for_label }}"
+                       value="{{ form.location.value|default:'' }}"
+                       placeholder="e.g. Dhaka Medical College, Mirpur"
+                       {% if form.location.errors %}class="error-input"{% endif %}>
+                {% if form.location.errors %}
+                <div class="field-error">{{ form.location.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                <textarea name="description" id="{{ form.description.id_for_label }}"
+                          placeholder="Describe what help you need..."
+                          {% if form.description.errors %}class="error-input"{% endif %}>{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                <div class="field-error">{{ form.description.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">Phone number</label>
+                <input type="tel" name="phone" id="{{ form.phone.id_for_label }}"
+                       value="{{ form.phone.value|default:'' }}"
+                       placeholder="e.g. 01XXXXXXXXX"
+                       {% if form.phone.errors %}class="error-input"{% endif %}>
+                {% if form.phone.errors %}
+                <div class="field-error">{{ form.phone.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Hospital -->
+            <div class="form-group">
+                <label for="{{ form.hospital.id_for_label }}">Hospital (optional)</label>
+                <input type="text" name="hospital" id="{{ form.hospital.id_for_label }}"
+                       value="{{ form.hospital.value|default:'' }}"
+                       placeholder="e.g. Dhaka Medical College Hospital">
+            </div>
+
+            <!-- Blood specific fields -->
+            <div class="blood-fields {% if form.request_type.value == 'blood' %}visible{% endif %}" id="bloodFields">
+                <div class="blood-fields-row">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="{{ form.blood_group.id_for_label }}">Blood group</label>
+                        <select name="blood_group" id="{{ form.blood_group.id_for_label }}">
+                            <option value="">— Select —</option>
+                            <option value="A+" {% if form.blood_group.value == "A+" %}selected{% endif %}>A+</option>
+                            <option value="A-" {% if form.blood_group.value == "A-" %}selected{% endif %}>A−</option>
+                            <option value="B+" {% if form.blood_group.value == "B+" %}selected{% endif %}>B+</option>
+                            <option value="B-" {% if form.blood_group.value == "B-" %}selected{% endif %}>B−</option>
+                            <option value="AB+" {% if form.blood_group.value == "AB+" %}selected{% endif %}>AB+</option>
+                            <option value="AB-" {% if form.blood_group.value == "AB-" %}selected{% endif %}>AB−</option>
+                            <option value="O+" {% if form.blood_group.value == "O+" %}selected{% endif %}>O+</option>
+                            <option value="O-" {% if form.blood_group.value == "O-" %}selected{% endif %}>O−</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label for="{{ form.blood_bags.id_for_label }}">Bags needed</label>
+                        <input type="number" name="blood_bags" id="{{ form.blood_bags.id_for_label }}"
+                               value="{{ form.blood_bags.value|default:'1' }}"
+                               min="1" max="20" placeholder="e.g. 2">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Needed at -->
+            <div class="form-group">
+                <label for="{{ form.needed_at.id_for_label }}">Needed by (date & time)</label>
+                <input type="datetime-local" name="needed_at" id="{{ form.needed_at.id_for_label }}"
+                       value="{{ form.needed_at.value|default:'' }}">
+                <div class="form-hint">Leave blank if needed immediately.</div>
+            </div>
+
+            <!-- Hidden blood_bags fallback — ensures 0 is submitted for non-blood types -->
+            <input type="hidden" name="_blood_bags_fallback" value="0">
+
+            <div class="form-actions">
+                <button type="submit" class="button lg">🚀 Submit request</button>
+                <a class="button outline lg" href="{% url 'medical:my_requests' %}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const radios = document.querySelectorAll('input[name="request_type"]');
+    const bloodFields = document.getElementById('bloodFields');
+    const bloodBags = document.querySelector('input[name="blood_bags"]');
+
+    function updateFields() {
+        const selected = document.querySelector('input[name="request_type"]:checked');
+        const type = selected ? selected.value : '';
+
+        if (type === 'blood') {
+            bloodFields.classList.add('visible');
+        } else {
+            bloodFields.classList.remove('visible');
+            // Reset blood fields when not needed
+            if (bloodBags) bloodBags.value = '0';
+        }
+    }
+
+    radios.forEach(r => r.addEventListener('change', updateFields));
+    updateFields(); // run on load
+
+    // Ensure blood_bags always has a value on submit
+    document.getElementById('medicalForm').addEventListener('submit', function() {
+        if (bloodBags && (bloodBags.value === '' || bloodBags.value === null)) {
+            bloodBags.value = '0';
+        }
+    });
+</script>
+{% endblock %}
