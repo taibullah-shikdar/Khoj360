@@ -1,0 +1,14 @@
+{% extends "core/base.html" %}
+
+{% block title %}Apply{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Apply for a role</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit application</button>
+    </form>
+</div>
+{% endblock %}

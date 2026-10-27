@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Khoj360{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ── DESIGN TOKENS ──────────────────────────────── */
+        :root {
+            --brand:        #0e7c74;
+            --brand-dark:   #085e58;
+            --brand-light:  #e0f5f3;
+            --brand-mid:    #14b8a6;
+            --accent:       #f59e0b;
+            --accent-light: #fef3c7;
+            --danger:       #dc2626;
+            --danger-light: #fee2e2;
+            --text-main:    #111827;
+            --text-sub:     #4b5563;
+            --text-muted:   #9ca3af;
+            --bg:           #f0fafa;
+            --surface:      #ffffff;
+            --border:       #d1faf6;
+            --border-dark:  #a7f3d0;
+            --shadow-sm:    0 1px 3px rgba(14,124,116,.08), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md:    0 4px 16px rgba(14,124,116,.12), 0 2px 8px rgba(0,0,0,.06);
+            --shadow-lg:    0 10px 40px rgba(14,124,116,.16), 0 4px 16px rgba(0,0,0,.08);
+            --radius-sm:    8px;
+            --radius-md:    14px;
+            --radius-lg:    22px;
+            --radius-full:  999px;
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        }
+
+        /* ── RESET ──────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; }
+        a { color: var(--brand); text-decoration: none; font-weight: 600; }
+        a:hover { color: var(--brand-dark); }
+        img { max-width: 100%; display: block; }
+
+        /* ── BUTTON SYSTEM ──────────────────────────────── */
+        button, .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 40px;
+            padding: 0 18px;
+            border: 1.5px solid transparent;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%);
+            color: #fff;
+            font: 600 0.9rem 'Inter', sans-serif;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all .18s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        button:hover, .button:hover {
+            background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-1px);
+            color: #fff;
+        }
+        button:active, .button:active { transform: translateY(0); }
+
+        .button.outline {
+            background: var(--surface);
+            border-color: var(--brand);
+            color: var(--brand);
+            box-shadow: var(--shadow-sm);
+        }
+        .button.outline:hover {
+            background: var(--brand-light);
+            box-shadow: var(--shadow-md);
+            color: var(--brand-dark);
+        }
+        .button.danger {
+            background: linear-gradient(135deg, var(--danger), #ef4444);
+            border-color: #fca5a5;
+            box-shadow: 0 4px 16px rgba(220,38,38,.22);
+        }
+        .button.danger:hover { background: linear-gradient(135deg, #b91c1c, var(--danger)); }
+        .button.ghost {
+            background: transparent;
+            border-color: transparent;
+            color: var(--brand);
+            box-shadow: none;
+        }
+        .button.ghost:hover { background: var(--brand-light); transform: none; }
+        .button.sm { min-height: 32px; padding: 0 12px; font-size: 0.8rem; border-radius: 6px; }
+        .button.lg { min-height: 50px; padding: 0 28px; font-size: 1rem; border-radius: var(--radius-md); }
+        .button.accent {
+            background: linear-gradient(135deg, var(--accent) 0%, #f97316 100%);
+            border-color: #fde68a;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(245,158,11,.28);
+        }
+        .button.accent:hover { background: linear-gradient(135deg, #d97706, var(--accent)); }
+
+        /* ── FORMS ──────────────────────────────────────── */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-dark);
+            border-radius: var(--radius-sm);
+            font: inherit;
+            background: var(--surface);
+            color: var(--text-main);
+            transition: border-color .15s, box-shadow .15s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--brand-mid);
+            box-shadow: 0 0 0 3px rgba(20,184,166,.18);
+        }
+        textarea { min-height: 110px; resize: vertical; }
+        label { display: block; font-weight: 600; font-size: 0.88rem; color: var(--text-sub); margin-bottom: 5px; }
+        form p { display: grid; gap: 6px; }
+
+        /* ── CARDS ──────────────────────────────────────── */
+        .card {
+            padding: 24px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--surface);
+            box-shadow: var(--shadow-sm);
+        }
+        .card:hover { box-shadow: var(--shadow-md); }
+
+        /* ── BADGES / PILLS ─────────────────────────────── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: var(--brand-light);
+            color: var(--brand-dark);
+        }
+        .badge.red { background: var(--danger-light); color: var(--danger); }
+        .badge.gold { background: var(--accent-light); color: #92400e; }
+        .badge.blue { background: #dbeafe; color: #1e40af; }
+        .badge.green { background: #d1fae5; color: #065f46; }
+
+        /* ── NAV BADGE ──────────────────────────────────── */
+        .nav-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 6px;
+            border-radius: var(--radius-full);
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 800;
+            line-height: 1;
+            box-shadow: 0 2px 6px rgba(220,38,38,0.35);
+        }
+        .nav-badge.news { background: var(--accent); box-shadow: 0 2px 6px rgba(245,158,11,0.35); }
+
+        /* ── HEADER / NAV ───────────────────────────────── */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--surface);
+            border-bottom: 1.5px solid var(--border);
+            box-shadow: 0 2px 12px rgba(14,124,116,.08);
+        }
+        nav {
+            width: min(1200px, calc(100% - 32px));
+            margin: 0 auto;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .brand:hover { color: var(--brand); }
+        .brand-mark {
+            width: 36px;
+            height: 36px;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--brand), var(--brand-mid));
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 900;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Nav links */
+        .nav-link {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 64px;
+            padding: 0 12px;
+            color: var(--text-sub);
+            font-weight: 600;
+            font-size: 0.92rem;
+            border-bottom: 3px solid transparent;
+            transition: color .15s, border-color .15s;
+            text-decoration: none;
+        }
+        .nav-link:hover { color: var(--brand); }
+        .nav-link.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+        /* Spacer pushes account icon to right */
+        .nav-spacer { flex: 1; }
+
+        /* Account icon */
+        .nav-account {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px 6px 6px;
+            border-radius: var(--radius-full);
+            border: 1.5px solid var(--border-dark);
+            color: var(--brand-dark);
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-decoration: none;
+            transition: all .15s;
+            background: var(--brand-light);
+        }
+        .nav-account:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+        .nav-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--brand);
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-weight: 900;
+            font-size: 0.9rem;
+        }
+        .nav-account:hover .nav-avatar { background: #fff; color: var(--brand); }
+
+        /* ── MAIN LAYOUT ─────────────────────────────────── */
+        main {
+            width: min(1200px, calc(100% - 32px));
+            margin: 36px auto 60px;
+        }
+
+        /* ── MISC UTILITY ───────────────────────────────── */
+        .stack { display: grid; gap: 14px; }
+        .muted { color: var(--text-muted); font-size: 0.88rem; }
+        .text-center { text-align: center; }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+        .divider { border: none; border-top: 1.5px solid var(--border); margin: 0; }
+
+        /* ── LOGIN / AUTH PAGES ─────────────────────────── */
+        .login-wrap {
+            min-height: calc(100vh - 130px);
+            display: grid;
+            place-items: center;
+            padding: 40px 16px;
+        }
+        .login-card {
+            width: min(440px, 100%);
+            padding: 36px;
+            border: 1.5px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            box-shadow: var(--shadow-lg);
+        }
+        .login-card h1 { font-size: 2rem; font-weight: 900; margin-bottom: 6px; }
+        .login-card .subtitle { color: var(--text-sub); margin-bottom: 24px; font-size: 0.95rem; }
+        .login-card button { width: 100%; margin-top: 8px; }
+
+        /* ── SOS PAGE ───────────────────────────────────── */
+        .sos-shell {
+            min-height: calc(100vh - 130px);
+            display: grid;
+            place-items: center;
+            padding: 40px 16px;
+        }
+        .sos-panel {
+            width: min(640px, 100%);
+            text-align: center;
+            padding: 48px 36px;
+            border: 2px solid rgba(220,38,38,.25);
+            border-radius: var(--radius-lg);
+            background: var(--surface);
+            box-shadow: 0 20px 60px rgba(220,38,38,.12), var(--shadow-lg);
+        }
+        .eyebrow {
+            font-size: 0.82rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--danger);
+            margin-bottom: 12px;
+        }
+        .sos-panel h1 {
+            font-size: clamp(2rem, 7vw, 3.8rem);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .sos-form { margin: 36px 0 24px; }
+        .sos-button {
+            width: min(260px, 72vw);
+            aspect-ratio: 1;
+            min-height: 0;
+            display: inline-grid;
+            place-items: center;
+            border-radius: 50%;
+            border: 3px solid rgba(254,202,202,.8);
+            background: radial-gradient(circle at 50% 30%, #fb7185, #dc2626 52%, #7f1d1d 100%);
+            box-shadow: 0 0 0 16px rgba(239,68,68,.1), 0 0 60px rgba(248,113,113,.4);
+            cursor: pointer;
+            transition: box-shadow .2s;
+        }
+        .sos-button:hover { box-shadow: 0 0 0 24px rgba(239,68,68,.15), 0 0 80px rgba(248,113,113,.5); }
+        .sos-button span { font-size: 3.8rem; font-weight: 1000; color: #fff; line-height: 1; }
+        .sos-button small { font-size: 0.9rem; color: #fee2e2; }
+        .status-strip {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            background: var(--brand-light);
+            color: var(--brand-dark);
+            font-weight: 600;
+        }
+
+        /* ── ALERTS / MESSAGES ──────────────────────────── */
+        .alert {
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .alert.success { background: #d1fae5; border-color: #6ee7b7; color: #065f46; }
+        .alert.error { background: var(--danger-light); border-color: #fca5a5; color: #7f1d1d; }
+        .alert.info { background: #dbeafe; border-color: #93c5fd; color: #1e40af; }
+        .alert.warning { background: var(--accent-light); border-color: #fcd34d; color: #78350f; }
+
+        /* ── RESPONSIVE ─────────────────────────────────── */
+        @media (max-width: 768px) {
+            nav { gap: 2px; flex-wrap: nowrap; overflow-x: auto; padding: 0 4px; }
+            .nav-link { padding: 0 8px; font-size: 0.82rem; }
+            .brand { font-size: 1rem; margin-right: 8px; }
+            .brand-name { display: none; }
+            main { width: 100%; padding: 0 16px; margin-top: 24px; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <a class="brand" href="{% url 'core:home' %}">
+                <span class="brand-mark">🔍</span>
+                <span class="brand-name">Khoj360</span>
+            </a>
+
+            <a class="nav-link {% if request.resolver_match.namespace == 'core' and request.resolver_match.url_name == 'home' %}active{% endif %}"
+               href="{% url 'core:home' %}">Home</a>
+
+            <a class="nav-link {% if request.resolver_match.namespace == 'emergency' %}active{% endif %}"
+               href="{% url 'emergency:sos_home' %}">
+                🚨 Emergency
+                {% if user.is_authenticated %}
+                    <span class="nav-badge" data-emergency-count style="{% if not unread_emergency_count %}display:none;{% endif %}">{{ unread_emergency_count|default:"0" }}</span>
+                {% endif %}
+            </a>
+
+            <a class="nav-link {% if request.resolver_match.namespace == 'medical' %}active{% endif %}"
+               href="{% url 'medical:open_requests' %}">
+                🩸 Medical
+                {% if user.is_authenticated %}
+                    <span class="nav-badge" data-medical-count style="{% if not unread_medical_count %}display:none;{% endif %}">{{ unread_medical_count|default:"0" }}</span>
+                {% endif %}
+            </a>
+
+            <a class="nav-link {% if request.resolver_match.namespace == 'repair' %}active{% endif %}"
+               href="{% url 'repair:open_requests' %}">
+                🔧 Repair
+                {% if user.is_authenticated %}
+                    <span class="nav-badge" data-repair-count style="{% if not unread_repair_count %}display:none;{% endif %}">{{ unread_repair_count|default:"0" }}</span>
+                {% endif %}
+            </a>
+
+            <!-- Nearby News with badge -->
+            <a class="nav-link {% if request.resolver_match.url_name == 'news_list' %}active{% endif %}"
+               href="{% url 'core:news_list' %}">
+                📰 News
+                {% if user.is_authenticated %}
+                    <span class="nav-badge news" data-news-count style="{% if not unseen_news_count %}display:none;{% endif %}">{{ unseen_news_count|default:"0" }}</span>
+                {% endif %}
+            </a>
+
+
+            <!-- Spacer pushes account to far right -->
+            <span class="nav-spacer"></span>
+
+            {% if user.is_authenticated %}
+                <a class="nav-link {% if request.resolver_match.url_name == 'application_status' %}active{% endif %}"
+                   href="{% url 'accounts:application_status' %}" style="font-size:0.82rem;">Applications</a>
+                <a class="nav-account {% if request.resolver_match.namespace == 'accounts' %}active{% endif %}"
+                   href="{% url 'accounts:profile' %}" title="Your profile">
+                    <span class="nav-avatar">{{ user.username|first|upper }}</span>
+                    {{ user.username|truncatechars:12 }}
+                </a>
+            {% else %}
+                <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                <a class="button lg" href="{% url 'accounts:signup' %}">Sign up</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Live badge polling every 30s -->
+    {% if user.is_authenticated %}
+    <script>
+        function updateBadge(selector, count) {
+            let el = document.querySelector(selector);
+            if (!el) {
+                // badge element নেই — parent nav-link এ dynamically বানাও
+                return;
+            }
+            if (count > 0) { el.textContent = count; el.style.display = ''; }
+            else { el.style.display = 'none'; }
+        }
+
+        async function refreshBadges() {
+            try {
+                const res = await fetch("{% url 'core:notification_count' %}");
+                if (!res.ok) return;
+                const data = await res.json();
+
+                updateBadge('[data-emergency-count]', data.emergency_count || 0);
+                updateBadge('[data-medical-count]',   data.medical_count   || 0);
+                updateBadge('[data-repair-count]',    data.repair_count    || 0);
+                updateBadge('[data-news-count]',      data.news_count      || 0);
+            } catch(e) {}
+        }
+        setInterval(refreshBadges, 30000);
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

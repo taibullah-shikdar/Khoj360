@@ -1,3 +1,4 @@
+#app of emergency
 from django.apps import AppConfig
 
 

@@ -1,0 +1,37 @@
+{% extends "core/base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<section class="grid">
+    <div class="card">
+        <h1>Profile</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Save profile</button>
+        </form>
+    </div>
+
+    <div class="card stack">
+        <h2>Roles</h2>
+        <p>Volunteer: <strong>{{ user.profile.is_volunteer|yesno:"Yes,No" }}</strong></p>
+        <p>Donor: <strong>{{ user.profile.is_donor|yesno:"Yes,No" }}</strong></p>
+        <p>Repair provider: <strong>{{ user.profile.is_repair_provider|yesno:"Yes,No" }}</strong></p>
+        <a class="button" href="{% url 'accounts:apply_role' %}">Apply for role</a>
+        <form action="{% url 'accounts:logout' %}" method="post">
+            {% csrf_token %}
+            <button class="secondary" type="submit">Logout</button>
+        </form>
+    </div>
+</section>
+
+<div class="card" style="margin-top: 16px;">
+    <h2>Applications</h2>
+    {% for application in applications %}
+        <p>{{ application.get_role_display }} - <span class="badge">{{ application.get_status_display }}</span></p>
+    {% empty %}
+        <p class="muted">No applications yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
