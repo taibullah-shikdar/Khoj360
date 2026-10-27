@@ -99,4 +99,3 @@ def notification_count(request):
             "news_count": unseen_news,
         }
     )
-
