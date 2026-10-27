@@ -4,6 +4,12 @@ from django.shortcuts import redirect, render
 
 from .forms import ProfileForm, SignupForm, VolunteerApplicationForm
 from .models import Profile, VolunteerApplication
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+
+from .forms import DonorSearchForm
+from .models import find_available_donors
 
 
 def signup(request):
@@ -62,3 +68,46 @@ def application_status(request):
     return render(request, "accounts/application_status.html", {"applications": applications})
 
 # Create your views here.
+
+
+@login_required
+def donor_search(request):
+    form = DonorSearchForm(request.GET)
+    if not form.is_valid():
+        return JsonResponse({"errors": form.errors}, status=400)
+    donors = find_available_donors(form.cleaned_data["blood_group"], form.cleaned_data["area"])
+    results = [
+        {
+            "full_name": donor.full_name,
+            "phone": donor.phone,
+            "area": donor.area,
+            "blood_group": donor.blood_group,
+        }
+        for donor in donors
+    ]
+    return JsonResponse({"donors": results})
+
+
+@login_required
+@require_POST
+def toggle_availability(request):
+    profile_obj, _ = Profile.objects.get_or_create(
+        user=request.user,
+        defaults={"full_name": request.user.get_full_name() or request.user.username},
+    )
+    profile_obj.is_available = not profile_obj.is_available
+    profile_obj.save()
+    return redirect("accounts:profile")
+
+
+@login_required
+@require_POST
+def withdraw_application(request, pk):
+    application = get_object_or_404(
+        VolunteerApplication,
+        pk=pk,
+        user=request.user,
+        status=VolunteerApplication.STATUS_PENDING,
+    )
+    application.delete()
+    return redirect("accounts:application_status")

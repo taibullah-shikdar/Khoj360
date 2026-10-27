@@ -86,3 +86,31 @@ class VolunteerApplication(models.Model):
             profile.save()
 
 # Create your models here.
+
+
+# Donor groups each recipient blood group can safely receive from.
+BLOOD_COMPATIBILITY = {
+    "O-": ["O-"],
+    "O+": ["O+", "O-"],
+    "A-": ["A-", "O-"],
+    "A+": ["A+", "A-", "O+", "O-"],
+    "B-": ["B-", "O-"],
+    "B+": ["B+", "B-", "O+", "O-"],
+    "AB-": ["AB-", "A-", "B-", "O-"],
+    "AB+": ["AB+", "AB-", "A+", "A-", "B+", "B-", "O+", "O-"],
+}
+
+
+def compatible_blood_groups(recipient_group):
+    return BLOOD_COMPATIBILITY.get(recipient_group, [])
+
+
+def find_available_donors(blood_group, area=""):
+    donors = Profile.objects.filter(
+        is_donor=True,
+        is_available=True,
+        blood_group__in=compatible_blood_groups(blood_group),
+    )
+    if area:
+        donors = donors.filter(area__icontains=area)
+    return donors.order_by("full_name")

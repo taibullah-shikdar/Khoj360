@@ -26,3 +26,8 @@ class VolunteerApplicationForm(forms.ModelForm):
     class Meta:
         model = VolunteerApplication
         fields = ("role", "message")
+
+
+class DonorSearchForm(forms.Form):
+    blood_group = forms.ChoiceField(choices=Profile.BLOOD_GROUPS[1:])
+    area = forms.CharField(max_length=120, required=False)
