@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from.import urls
 
 
 app_name = "repair"
